@@ -1,5 +1,5 @@
 // PPU渲染测试
-import { PPU } from './src/core/ppu/index.js';
+import { PPU } from '../../src/core/ppu/index.js';
 
 console.log('🧪 开始PPU渲染测试...\n');
 

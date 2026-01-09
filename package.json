@@ -1,0 +1,30 @@
+{
+  "name": "fc-emulator",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "FC/NES 模拟器 - 基于 TypeScript 的浏览器模拟器",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3",
+    "vite": "^5.0.0",
+    "terser": "^5.0.0"
+  },
+  "keywords": [
+    "emulator",
+    "nes",
+    "fc",
+    "retro",
+    "gaming",
+    "typescript",
+    "web"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}

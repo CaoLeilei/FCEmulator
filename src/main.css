@@ -1,0 +1,311 @@
+/* FC 模拟器主样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  color: #ecf0f1;
+  overflow-x: hidden;
+}
+
+#app {
+  min-height: 100vh;
+  padding: 20px;
+}
+
+/* 主容器 */
+.emulator-container {
+  display: flex;
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* 游戏区域 */
+.game-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+#game-canvas {
+  border: 3px solid #34495e;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  background: #000;
+  image-rendering: pixelated;
+  width: 512px;
+  height: 480px;
+}
+
+/* 控制按钮 */
+.controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn-primary {
+  background: #3498db;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #2980b9;
+}
+
+.btn-secondary {
+  background: #95a5a6;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #7f8c8d;
+}
+
+.btn-warning {
+  background: #f39c12;
+  color: white;
+}
+
+.btn-warning:hover {
+  background: #e67e22;
+}
+
+.btn-info {
+  background: #9b59b6;
+  color: white;
+}
+
+.btn-info:hover {
+  background: #8e44ad;
+}
+
+/* 侧边栏 */
+.sidebar {
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.panel {
+  background: rgba(52, 73, 94, 0.8);
+  border-radius: 8px;
+  padding: 20px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.panel h3 {
+  margin-bottom: 15px;
+  color: #3498db;
+  font-size: 18px;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 5px;
+}
+
+/* ROM 加载器 */
+.rom-loader {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rom-info {
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 5px;
+  font-size: 12px;
+  min-height: 60px;
+}
+
+/* 设置组 */
+.setting-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.setting-group label {
+  font-size: 14px;
+  color: #bdc3c7;
+}
+
+.select, .slider {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #34495e;
+  border-radius: 4px;
+  background: #2c3e50;
+  color: #ecf0f1;
+}
+
+.slider {
+  cursor: pointer;
+}
+
+/* 调试信息 */
+.debug-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+}
+
+.debug-info div {
+  padding: 5px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+}
+
+/* 调试面板 */
+.debug-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(44, 62, 80, 0.95);
+  border-radius: 10px;
+  padding: 20px;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  border: 2px solid #3498db;
+  max-width: 90%;
+  max-height: 90%;
+  overflow-y: auto;
+}
+
+.debug-panel.hidden {
+  display: none;
+}
+
+.debug-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 15px;
+}
+
+.debug-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.debug-section h4 {
+  color: #3498db;
+  margin-bottom: 10px;
+}
+
+.debug-section canvas {
+  border: 1px solid #34495e;
+  border-radius: 4px;
+  background: #000;
+}
+
+/* 消息容器 */
+#message-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.message {
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-weight: bold;
+  min-width: 200px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: slideIn 0.3s ease-out;
+}
+
+.message-info {
+  background: #3498db;
+  color: white;
+}
+
+.message-success {
+  background: #27ae60;
+  color: white;
+}
+
+.message-error {
+  background: #e74c3c;
+  color: white;
+}
+
+.message-warning {
+  background: #f39c12;
+  color: white;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .emulator-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .sidebar {
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  #game-canvas {
+    width: 256px;
+    height: 240px;
+  }
+}
+
+/* 静音按钮状态 */
+.muted {
+  background: #e74c3c !important;
+}
+
+.muted:hover {
+  background: #c0392b !important;
+}

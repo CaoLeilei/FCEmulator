@@ -30,6 +30,10 @@ export class CPU {
   private decoder: InstructionDecoder;
 
   private memory: Memory;
+
+  // 中断标志
+  private nmiRequested: boolean = false;
+  private irqRequested: boolean = false;
   
   constructor(memory: Memory) {
     this.memory = memory;
@@ -45,14 +49,51 @@ export class CPU {
     this.A = this.X = this.Y = 0;
     this.flags = { C: false, Z: false, I: true, D: false, B: false, V: false, N: false };
     this.cycles = 0;
+    this.nmiRequested = false;
+    this.irqRequested = false;
   }
 
   /**
    * 执行一条指令
    */
   step(): number {
+    // 在执行指令之前检查 NMI（NMI 不能被禁用）
+    if (this.nmiRequested) {
+      this.handleNMI();
+      this.nmiRequested = false;
+    }
+    // 然后检查 IRQ（可以被 I 标志禁用）
+    else if (this.irqRequested && !this.flags.I) {
+      this.handleIRQ();
+      this.irqRequested = false;
+    }
+
     const opcode = this.readByte(this.PC++);
     return this.decoder.executeOpcode(opcode);
+  }
+
+  /**
+   * 处理 NMI 中断
+   */
+  private handleNMI(): void {
+    console.log(`CPU handling NMI: current PC=0x${this.PC.toString(16)}, jumping to 0xFFFA`);
+    this.push16(this.PC);
+    this.pushByte(this.getStatusFlags() & ~0x10); // 清除 B 标志
+    this.flags.I = true;
+    this.PC = this.readWord(0xFFFA);
+    this.cycles += 7;
+    console.log(`CPU NMI handled: new PC=0x${this.PC.toString(16)}`);
+  }
+
+  /**
+   * 处理 IRQ 中断
+   */
+  private handleIRQ(): void {
+    this.push16(this.PC);
+    this.pushByte(this.getStatusFlags() & ~0x10); // 清除 B 标志
+    this.flags.I = true;
+    this.PC = this.readWord(0xFFFE);
+    this.cycles += 7;
   }
 
   // 内存访问方法
@@ -126,29 +167,17 @@ export class CPU {
   }
 
   /**
-   * 请求中断
+   * 请求 NMI 中断（设置标志，实际处理在 step() 中）
    */
-  requestIRQ(): void {
-    if (!this.flags.I) {
-      // 压入中断返回后要执行的指令地址
-      // 对于手动触发的IRQ，压入当前PC+1
-      this.push16(this.PC + 1);
-      this.pushByte(this.getStatusFlags() & ~0x10);
-      this.flags.I = true;
-      this.PC = this.readWord(0xFFFE);
-      this.cycles += 7;
-    }
+  requestNMI(): void {
+    this.nmiRequested = true;
   }
 
   /**
-   * 非屏蔽中断
+   * 请求 IRQ 中断（设置标志，实际处理在 step() 中）
    */
-  requestNMI(): void {
-    this.push16(this.PC);
-    this.pushByte(this.getStatusFlags() & ~0x10);
-    this.flags.I = true;
-    this.PC = this.readWord(0xFFFA);
-    this.cycles += 7;
+  requestIRQ(): void {
+    this.irqRequested = true;
   }
 
   pushByte(value: number): void {

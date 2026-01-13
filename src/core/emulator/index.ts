@@ -55,6 +55,10 @@ export class Emulator {
     if (this.cartridge) {
       this.memory.setCartridge(this.cartridge);
     }
+
+    // 调试：输出复位后的 CPU 状态
+    const state = this.cpu.getState();
+    console.log('After reset, PC = 0x' + state.PC.toString(16).padStart(4, '0'));
   }
 
   /**
@@ -80,6 +84,7 @@ export class Emulator {
       throw new Error('No cartridge loaded');
     }
 
+    console.log('=== Emulator starting ===');
     this.isRunning = true;
     this.run();
   }
@@ -113,24 +118,41 @@ export class Emulator {
 
     const cyclesPerFrame = 29781; // NTSC: ~60 FPS
     let cyclesThisFrame = 0;
+    let instructionCount = 0; // 调试：指令计数
 
     while (cyclesThisFrame < cyclesPerFrame) {
+      // 执行剩余的 PPU 周期
+      for (let i = 0; i < 3; i++) {
+        this.ppu.step();
+      }
+
+      // 检查 PPU NMI（设置标志）
+      if (this.ppu.pollNMI()) {
+        this.cpu.requestNMI();
+      }
+
+      // 检查 PPU IRQ (MMC3)
+      if (this.ppu.pollIRQ()) {
+        this.cpu.requestIRQ();
+      }
+
       // CPU 执行一个指令
       const cpuCycles = this.cpu.step();
+      instructionCount++;
 
-      // PPU 执行对应周期 (PPU 运行在 CPU 的 3 倍频率)
-      for (let i = 0; i < cpuCycles * 3; i++) {
+      // 执行剩余的 PPU 周期
+      for (let i = 3; i < cpuCycles * 3; i++) {
         this.ppu.step();
+      }
 
-        // 检查 PPU NMI
-        if (this.ppu.pollNMI()) {
-          this.cpu.requestNMI();
-        }
+      // 检查 PPU NMI（设置标志）
+      if (this.ppu.pollNMI()) {
+        this.cpu.requestNMI();
+      }
 
-        // 检查 PPU IRQ (MMC3)
-        if (this.ppu.pollIRQ()) {
-          this.cpu.requestIRQ();
-        }
+      // 检查 PPU IRQ (MMC3)
+      if (this.ppu.pollIRQ()) {
+        this.cpu.requestIRQ();
       }
 
       // APU 执行对应周期
@@ -149,6 +171,11 @@ export class Emulator {
 
       cyclesThisFrame += cpuCycles;
       this.cycleCount += cpuCycles;
+    }
+
+    // 调试：输出指令计数
+    if (this.ppu.getState().frame <= 10) {
+      console.log(`Frame ${this.ppu.getState().frame}: executed ${instructionCount} instructions, ${cyclesThisFrame} cycles`);
     }
 
     // 渲染帧缓冲区
@@ -210,13 +237,23 @@ export class Emulator {
     // 设置输入控制器
     this.memory.setInputController(this.input);
 
-    // 连接 PPU 写入回调
+    // 连接 PPU 写入回调 - 添加调试
     this.memory.setPPUWriteCallback((address: number, value: number) => {
+      // 特别关注对 $2001 的写入
+      if ((address & 0x07) === 1) {
+        console.log(`CPU writing to PPUMASK ($2001): 0x${value.toString(16).padStart(2, '0')}`);
+      }
       this.ppu.writeRegister(address, value);
     });
 
     // 连接 PPU 读取回调
     this.memory.setPPUReadCallback((address: number) => {
+      // 特别关注对 $2002 的读取
+      if ((address & 0x07) === 2) {
+        const result = this.ppu.readRegister(address);
+        console.log(`CPU reading PPUSTATUS ($2002): 0x${result.toString(16).padStart(2, '0')}`);
+        return result;
+      }
       return this.ppu.readRegister(address);
     });
   }
@@ -272,8 +309,49 @@ export class Emulator {
    */
   private renderFrame(): void {
     const frameBuffer = this.ppu.getFrameBuffer();
+    const ppuState = this.ppu.getState();
+    const cpuState = this.cpu.getState();
 
-    // console.log('private renderFrame():', frameBuffer);
+    // 从第 1 帧开始每帧都输出调试信息
+    console.log(`=== Frame ${ppuState.frame} ===`);
+    console.log('CPU State:', {
+      PC: `0x${cpuState.PC.toString(16).padStart(4, '0')}`,
+      A: `0x${cpuState.A.toString(16).padStart(2, '0')}`,
+      X: `0x${cpuState.X.toString(16).padStart(2, '0')}`,
+      Y: `0x${cpuState.Y.toString(16).padStart(2, '0')}`,
+      SP: `0x${cpuState.SP.toString(16).padStart(2, '0')}`,
+      flags: cpuState.flags
+    });
+    console.log('PPU State:', {
+      ctrl: `0x${ppuState.ctrl.toString(16).padStart(2, '0')}`,
+      mask: `0x${ppuState.mask.toString(16).padStart(2, '0')}`,
+      scanline: ppuState.scanline,
+      cycle: ppuState.cycle,
+      frame: ppuState.frame,
+      bgEnabled: (ppuState.mask & 0x08) !== 0,
+      spriteEnabled: (ppuState.mask & 0x10) !== 0,
+      nmiOutput: ppuState.nmiOutput,
+      nmiOccur: ppuState.nmiOccur
+    });
+
+    // 检查帧缓冲区前几个像素
+    const firstPixels = Array.from(frameBuffer.slice(0, 16));
+    console.log('First pixels:', firstPixels);
+
+    // 检查是否有非黑色像素
+    let nonBlackCount = 0;
+    for (let i = 0; i < frameBuffer.length; i += 4) {
+      if (frameBuffer[i] !== 0 || frameBuffer[i + 1] !== 0 || frameBuffer[i + 2] !== 0) {
+        nonBlackCount++;
+      }
+    }
+    console.log('Non-black pixels:', nonBlackCount);
+
+    // 如果 mask 还是 0，输出 RAM 中的关键地址
+    if (ppuState.mask === 0x00 && ppuState.frame > 20) {
+      console.log('Mask still 0 after 20 frames - checking if initialization stuck');
+      console.log('RAM at 0x0000-0x0010:', Array.from(this.memory.getRAM().slice(0, 16)).map(x => `0x${x.toString(16).padStart(2, '0')}`).join(' '));
+    }
 
     // 发送帧缓冲区到前端渲染
     this.onFrameRender?.(frameBuffer);

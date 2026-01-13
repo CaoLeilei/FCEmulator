@@ -123,9 +123,11 @@ export class PPU {
     else if (this.scanline === 241) {
       if (this.cycle === 1) {
         this.status |= 0x80; // 设置 VBlank 标志
+        console.log(`PPU entering VBlank at scanline 241, cycle 1, frame ${this.frame}, status=0x${this.status.toString(16)}`);
         if (this.nmiOutput && !this.nmiOccur) {
           this.nmiOccur = true;
           nmiOccurred = true;
+          console.log(`NMI set at scanline ${this.scanline}, cycle ${this.cycle}, frame ${this.frame}, nmiOutput=${this.nmiOutput}`);
         }
       }
     }
@@ -230,8 +232,6 @@ export class PPU {
         }
       }
     }
-
-    // 移除调试信息输出
   }
 
   /**
@@ -364,20 +364,22 @@ export class PPU {
    * 读取寄存器
    */
   readRegister(address: number): number {
-    switch (address) {
-      case 0x2000: return this.ctrl;
-      case 0x2001: return this.mask;
-      case 0x2002: {
+    const regAddr = address & 0x07; // 镜像到 0-7
+
+    switch (regAddr) {
+      case 0: return this.ctrl;       // $2000
+      case 1: return this.mask;       // $2001
+      case 2: {                       // $2002
         const result = this.status;
         this.status &= ~0x80; // 清除 VBlank 标志
         this.w = false; // 重置写入锁存器
         return result;
       }
-      case 0x2003: return this.oamAddr;
-      case 0x2004: return this.oam[this.oamAddr];
-      case 0x2005: return this.scroll;
-      case 0x2006: return this.addr;
-      case 0x2007: return this.readData();
+      case 3: return this.oamAddr;    // $2003
+      case 4: return this.oam[this.oamAddr]; // $2004
+      case 5: return this.scroll;      // $2005
+      case 6: return this.addr;        // $2006
+      case 7: return this.readData(); // $2007
       default: return 0;
     }
   }
@@ -387,37 +389,38 @@ export class PPU {
    */
   writeRegister(address: number, value: number): void {
     value &= 0xFF;
+    const regAddr = address & 0x07; // 镜像到 0-7
 
-    switch (address) {
-      case 0x2000: // PPUCTRL
+    switch (regAddr) {
+      case 0: // PPUCTRL ($2000)
         this.ctrl = value;
         this.t = (this.t & ~0x0C00) | ((value & 0x03) << 10);
         this.nmiOutput = !!(value & 0x80);
-        // 不输出日志，避免干扰测试
+        console.log(`PPU Write: $2000 = 0x${value.toString(16).padStart(2, '0')}`);
         break;
 
-      case 0x2001: // PPUMASK
+      case 1: // PPUMASK ($2001)
         this.mask = value;
-        // 不输出日志，避免干扰测试
+        console.log(`PPU Write: $2001 = 0x${value.toString(16).padStart(2, '0')} (bg: ${!!(value & 0x08)}, sprite: ${!!(value & 0x10)})`);
         break;
 
-      case 0x2003: // OAMADDR
+      case 2: // OAMADDR ($2003)
         this.oamAddr = value;
         break;
 
-      case 0x2004: // OAMDATA
+      case 3: // OAMDATA ($2004)
         this.oam[this.oamAddr++] = value;
         break;
 
-      case 0x2005: // PPUSCROLL
+      case 4: // PPUSCROLL ($2005)
         this.writeScroll(value);
         break;
 
-      case 0x2006: // PPUADDR
+      case 5: // PPUADDR ($2006)
         this.writeAddr(value);
         break;
 
-      case 0x2007: // PPUDATA
+      case 6: // PPUDATA ($2007)
         this.writeData(value);
         break;
     }
@@ -584,6 +587,9 @@ export class PPU {
    */
   pollNMI(): boolean {
     const result = this.nmiOccur;
+    if (result) {
+      console.log(`pollNMI returning true, clearing nmiOccur at frame ${this.frame}`);
+    }
     this.nmiOccur = false;
     return result;
   }

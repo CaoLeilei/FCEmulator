@@ -1,11 +1,11 @@
 // 算术指令测试
-import { CPU } from '../index.js';
-import { TestCartridge } from '../../../test-cartridge.js';
-import { Memory } from '../../memory/index.js';
+import { CPU } from '@/core/cpu/index.js';
+import { TestCartridge } from '../test-cartridge.js';
+import { Memory } from '@/core/memory/index.js';
 
 export function testArithmeticInstructions() {
   console.log('🧪 开始算术指令测试...');
-  
+
   const memory = new Memory();
   const testCartridge = new TestCartridge();
   memory.setTestCartridge(testCartridge);
@@ -38,10 +38,10 @@ export function testArithmeticInstructions() {
     cpu.setFlag('C', false);
     memory.writeByte(0x8000, 0x69); // ADC #$10
     memory.writeByte(0x8001, 0x10);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x40);
     assertEqual(cpu.getFlag('C'), false);
     assertEqual(cpu.getFlag('V'), false);
@@ -55,10 +55,10 @@ export function testArithmeticInstructions() {
     cpu.setFlag('C', false);
     memory.writeByte(0x8000, 0x69); // ADC #$20
     memory.writeByte(0x8001, 0x20);
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x10); // 0xF0 + 0x20 = 0x110 -> 0x10
     assertEqual(cpu.getFlag('C'), true);
     assertEqual(cpu.getFlag('V'), false);
@@ -69,10 +69,10 @@ export function testArithmeticInstructions() {
     cpu.setFlag('C', false);
     memory.writeByte(0x8000, 0x69); // ADC #$20
     memory.writeByte(0x8001, 0x20);
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x90); // 0x70 + 0x20 = 0x90 (溢出)
     assertEqual(cpu.getFlag('C'), false);
     assertEqual(cpu.getFlag('V'), true);
@@ -84,10 +84,10 @@ export function testArithmeticInstructions() {
     cpu.setFlag('C', true);
     memory.writeByte(0x8000, 0x69); // ADC #$10
     memory.writeByte(0x8001, 0x10);
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x41); // 0x30 + 0x10 + 1 = 0x41
     assertEqual(cpu.getFlag('C'), false);
   });
@@ -98,10 +98,10 @@ export function testArithmeticInstructions() {
     cpu.setFlag('C', true);
     memory.writeByte(0x8000, 0xE9); // SBC #$20
     memory.writeByte(0x8001, 0x20);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x30); // 0x50 - 0x20 = 0x30
     assertEqual(cpu.getFlag('C'), true);
     assertEqual(cpu.getFlag('V'), false);
@@ -113,10 +113,10 @@ export function testArithmeticInstructions() {
     cpu.setFlag('C', true);
     memory.writeByte(0x8000, 0xE9); // SBC #$30
     memory.writeByte(0x8001, 0x30);
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getA(), 0xF0); // 0x20 - 0x30 = -0x10 -> 0xF0
     assertEqual(cpu.getFlag('C'), false);
     assertEqual(cpu.getFlag('N'), true);
@@ -127,10 +127,10 @@ export function testArithmeticInstructions() {
     cpu.setFlag('C', false);
     memory.writeByte(0x8000, 0xE9); // SBC #$20
     memory.writeByte(0x8001, 0x20);
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x2F); // 0x50 - 0x20 - 1 = 0x2F
     assertEqual(cpu.getFlag('C'), true);
   });
@@ -140,10 +140,10 @@ export function testArithmeticInstructions() {
     cpu.setA(0x42);
     memory.writeByte(0x8000, 0xC9); // CMP #$42
     memory.writeByte(0x8001, 0x42);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x42); // A不变
     assertEqual(cpu.getFlag('C'), true);
     assertEqual(cpu.getFlag('Z'), true);
@@ -155,10 +155,10 @@ export function testArithmeticInstructions() {
     cpu.setA(0x80);
     memory.writeByte(0x8000, 0xC9); // CMP #$40
     memory.writeByte(0x8001, 0x40);
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getFlag('C'), true);
     assertEqual(cpu.getFlag('Z'), false);
     assertEqual(cpu.getFlag('N'), false);
@@ -168,10 +168,10 @@ export function testArithmeticInstructions() {
     cpu.setA(0x20);
     memory.writeByte(0x8000, 0xC9); // CMP #$40
     memory.writeByte(0x8001, 0x40);
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getFlag('C'), false);
     assertEqual(cpu.getFlag('Z'), false);
     assertEqual(cpu.getFlag('N'), true);
@@ -182,10 +182,10 @@ export function testArithmeticInstructions() {
     cpu.setX(0x15);
     memory.writeByte(0x8000, 0xE0); // CPX #$15
     memory.writeByte(0x8001, 0x15);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getFlag('C'), true);
     assertEqual(cpu.getFlag('Z'), true);
     assertEqual(cpu.getFlag('N'), false);
@@ -196,10 +196,10 @@ export function testArithmeticInstructions() {
     cpu.setX(0x30);
     memory.writeByte(0x8000, 0xE0); // CPX #$20
     memory.writeByte(0x8001, 0x20);
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getFlag('C'), true);
     assertEqual(cpu.getFlag('Z'), false);
     assertEqual(cpu.getFlag('N'), false);
@@ -209,10 +209,10 @@ export function testArithmeticInstructions() {
     cpu.setX(0x10);
     memory.writeByte(0x8000, 0xE0); // CPX #$20
     memory.writeByte(0x8001, 0x20);
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getFlag('C'), false);
     assertEqual(cpu.getFlag('Z'), false);
     assertEqual(cpu.getFlag('N'), true);
@@ -223,10 +223,10 @@ export function testArithmeticInstructions() {
     cpu.setY(0x88);
     memory.writeByte(0x8000, 0xC0); // CPY #$88
     memory.writeByte(0x8001, 0x88);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getFlag('C'), true);
     assertEqual(cpu.getFlag('Z'), true);
     assertEqual(cpu.getFlag('N'), false);
@@ -237,10 +237,10 @@ export function testArithmeticInstructions() {
     cpu.setY(0xFF);
     memory.writeByte(0x8000, 0xC0); // CPY #$01
     memory.writeByte(0x8001, 0x01);
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getFlag('C'), true);
     assertEqual(cpu.getFlag('Z'), false);
     // 修正：根据6502规范，N标志基于减法结果的第7位
@@ -252,10 +252,10 @@ export function testArithmeticInstructions() {
     cpu.setY(0x05);
     memory.writeByte(0x8000, 0xC0); // CPY #$10
     memory.writeByte(0x8001, 0x10);
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getFlag('C'), false);
     assertEqual(cpu.getFlag('Z'), false);
     assertEqual(cpu.getFlag('N'), true);
@@ -268,10 +268,10 @@ export function testArithmeticInstructions() {
     memory.writeByte(0x0050, 0x20);
     memory.writeByte(0x8000, 0x65); // ADC $50
     memory.writeByte(0x8001, 0x50);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x30);
     assertEqual(cycles, 3);
   });
@@ -282,10 +282,10 @@ export function testArithmeticInstructions() {
     memory.writeByte(0x0060, 0x15);
     memory.writeByte(0x8000, 0xE5); // SBC $60
     memory.writeByte(0x8001, 0x60);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x2B);
     assertEqual(cycles, 3);
   });
@@ -296,10 +296,10 @@ export function testArithmeticInstructions() {
     memory.writeByte(0x2000, 0x77);
     memory.writeByte(0x8000, 0xCD); // CMP $2000
     memory.writeWord(0x8001, 0x2000);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getFlag('C'), true);
     assertEqual(cpu.getFlag('Z'), true);
     assertEqual(cycles, 4);
@@ -312,10 +312,10 @@ export function testArithmeticInstructions() {
     cpu.setFlag('C', false);
     memory.writeByte(0x8000, 0x69); // ADC #$01
     memory.writeByte(0x8001, 0x01);
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x80);
     assertEqual(cpu.getFlag('V'), true);
     assertEqual(cpu.getFlag('N'), true);
@@ -327,10 +327,10 @@ export function testArithmeticInstructions() {
     cpu.setFlag('C', true);
     memory.writeByte(0x8000, 0xE9); // SBC #$01
     memory.writeByte(0x8001, 0x01);
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x7F);
     assertEqual(cpu.getFlag('V'), true);
     assertEqual(cpu.getFlag('N'), false);

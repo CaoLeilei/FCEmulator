@@ -1,11 +1,11 @@
 // 指令解码器测试
-import { CPU } from '../index.js';
-import { TestCartridge } from '../../../test-cartridge.js';
-import { Memory } from '../../memory/index.js';
+import { CPU } from '@/core/cpu/index.js';
+import { TestCartridge } from '../test-cartridge.js';
+import { Memory } from '@/core/memory/index.js';
 
 export function testInstructionDecoder() {
   console.log('🧪 开始指令解码器测试...');
-  
+
   const memory = new Memory();
   const testCartridge = new TestCartridge();
   memory.setTestCartridge(testCartridge);
@@ -36,7 +36,7 @@ export function testInstructionDecoder() {
   runTest('获取已实现指令信息', () => {
     const info = cpu.getInstructionInfo(0xEA); // NOP
     if (!info) throw new Error('指令信息未找到');
-    
+
     assertEqual(info.mnemonic, 'NOP');
     assertEqual(info.mode, 'implied');
     assertEqual(info.cycles, 2);
@@ -46,7 +46,7 @@ export function testInstructionDecoder() {
   runTest('获取LDA指令信息', () => {
     const info = cpu.getInstructionInfo(0xA9); // LDA #$nn
     if (!info) throw new Error('指令信息未找到');
-    
+
     assertEqual(info.mnemonic, 'LDA');
     assertEqual(info.mode, 'immediate');
     assertEqual(info.cycles, 2);
@@ -87,10 +87,10 @@ export function testInstructionDecoder() {
   // 测试未实现指令的处理
   runTest('未实现指令执行', () => {
     memory.writeByte(0x8000, 0x02); // 未实现指令
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     // 未实现指令应该返回默认周期数并继续执行
     assertEqual(cycles >= 0, true);
     assertEqual(cpu.getPC(), 0x8001);
@@ -119,7 +119,7 @@ export function testInstructionDecoder() {
       0xA1, // indirectX
       0xB1  // indirectY
     ];
-    
+
     for (const opcode of ldaOpcodes) {
       const info = cpu.getInstructionInfo(opcode);
       if (!info) throw new Error(`LDA opcode 0x${opcode.toString(16)} 未实现`);
@@ -140,7 +140,7 @@ export function testInstructionDecoder() {
       0x81, // indirectX
       0x91  // indirectY
     ];
-    
+
     for (const opcode of staOpcodes) {
       const info = cpu.getInstructionInfo(opcode);
       if (!info) throw new Error(`STA opcode 0x${opcode.toString(16)} 未实现`);
@@ -163,22 +163,22 @@ export function testInstructionDecoder() {
   runTest('指令周期数验证', () => {
     // 基础指令
     assertEqual(cpu.getInstructionInfo(0xEA)?.cycles, 2); // NOP
-    
+
     // 立即寻址
     assertEqual(cpu.getInstructionInfo(0xA9)?.cycles, 2); // LDA #$nn
     assertEqual(cpu.getInstructionInfo(0x69)?.cycles, 2); // ADC #$nn
     assertEqual(cpu.getInstructionInfo(0x29)?.cycles, 2); // AND #$nn
-    
+
     // 零页寻址
     assertEqual(cpu.getInstructionInfo(0xA5)?.cycles, 3); // LDA $nn
     assertEqual(cpu.getInstructionInfo(0x85)?.cycles, 3); // STA $nn
     assertEqual(cpu.getInstructionInfo(0x65)?.cycles, 3); // ADC $nn
-    
+
     // 绝对寻址
     assertEqual(cpu.getInstructionInfo(0xAD)?.cycles, 4); // LDA $nnnn
     assertEqual(cpu.getInstructionInfo(0x8D)?.cycles, 4); // STA $nnnn
     assertEqual(cpu.getInstructionInfo(0x6D)?.cycles, 4); // ADC $nnnn
-    
+
     // 栈操作
     assertEqual(cpu.getInstructionInfo(0x48)?.cycles, 3); // PHA
     assertEqual(cpu.getInstructionInfo(0x68)?.cycles, 4); // PLA
@@ -198,11 +198,11 @@ export function testInstructionDecoder() {
   // 测试指令解码错误处理
   runTest('指令解码错误处理', () => {
     const nullOpcode = 0x99; // 假设这个操作码可能未实现
-    
+
     if (!cpu.isImplemented(nullOpcode)) {
       const info = cpu.getInstructionInfo(nullOpcode);
       assertEqual(info, null);
-      
+
       // 执行未实现指令应该不会崩溃
       memory.writeByte(0x8000, nullOpcode);
       cpu.setPC(0x8000);
@@ -217,21 +217,21 @@ export function testInstructionDecoder() {
       // 基础指令
       0xEA, // NOP
       0x00, // BRK
-      
+
       // 加载指令组
       0xA9, 0xA5, 0xB5, 0xAD, 0xBD, 0xB9, 0xA1, 0xB1, // LDA
       0xA2, 0xA6, 0xB6, 0xAE, 0xBE, // LDX
       0xA0, 0xA4, 0xB4, 0xAC, 0xBC, // LDY
-      
+
       // 存储指令组
       0x85, 0x95, 0x8D, 0x9D, 0x99, 0x81, 0x91, // STA
       0x86, 0x96, 0x8E, // STX
       0x84, 0x94, 0x8C, // STY
-      
+
       // 寄存器传送
       0xAA, 0xA8, 0x8A, 0x98, 0xBA, 0x9A,
     ];
-    
+
     let missingCount = 0;
     for (const opcode of coreInstructions) {
       if (!cpu.isImplemented(opcode)) {
@@ -239,7 +239,7 @@ export function testInstructionDecoder() {
         console.log(`⚠️  核心指令 0x${opcode.toString(16).toUpperCase()} 未实现`);
       }
     }
-    
+
     if (missingCount > coreInstructions.length * 0.3) {
       throw new Error(`核心指令缺失过多: ${missingCount}/${coreInstructions.length}`);
     }

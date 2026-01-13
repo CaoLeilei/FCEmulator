@@ -1,7 +1,7 @@
 // 兼容性测试 - 测试经典ROM和场景
-import { CPU } from '../index.js';
-import { TestCartridge } from '../../../test-cartridge.js';
-import { Memory } from '../../memory/index.js';
+import { CPU } from '@/core/cpu/index.js';
+import { TestCartridge } from '../test-cartridge.js';
+import { Memory } from '@/core/memory/index.js';
 
 export function testCompatibility() {
   console.log('🧪 开始兼容性测试...');
@@ -307,9 +307,9 @@ export function testCompatibility() {
     ];
 
     // 8次右移，应该回到原始值
-        for (let i = 0; i < 8; i++) {
-          memory.writeByte(0x8000 + i, 0x6A); // ROR A
-        }
+    for (let i = 0; i < 8; i++) {
+      memory.writeByte(0x8000 + i, 0x6A); // ROR A
+    }
 
     cpu.setPC(0x8000);
     for (let i = 0; i < 8; i++) {

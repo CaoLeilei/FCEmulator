@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "lint": "tsc --noEmit",
     "clean": "rm -rf dist",
-    "test:apu": "tsx test/apu/index.ts"
+    "test:apu": "tsx test/apu/index.ts",
+    "test:ppu": "tsx test/ppu/index.ts"
   },
   "ts-node": {
     "esm": true,

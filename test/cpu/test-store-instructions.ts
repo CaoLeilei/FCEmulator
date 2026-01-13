@@ -1,11 +1,11 @@
 // 存储指令测试
-import { CPU } from '../index.js';
-import { Memory } from '../../memory/index.js';
-import { TestCartridge } from '../../../test-cartridge.js';
+import { CPU } from '@/core/cpu/index.js';
+import { Memory } from '@/core/memory/index.js';
+import { TestCartridge } from '../test-cartridge.js';
 
 export function testStoreInstructions() {
   console.log('🧪 开始存储指令测试...');
-  
+
   const memory = new Memory();
   const testCartridge = new TestCartridge();
   memory.setTestCartridge(testCartridge);
@@ -44,10 +44,10 @@ export function testStoreInstructions() {
     cpu.setA(0x7F);
     memory.writeByte(0x8000, 0x85); // STA $30
     memory.writeByte(0x8001, 0x30);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertMemory(0x0030, 0x7F);
     assertEqual(cpu.getPC(), 0x8002);
     assertEqual(cycles, 3);
@@ -59,10 +59,10 @@ export function testStoreInstructions() {
     cpu.setX(0x08);
     memory.writeByte(0x8000, 0x95); // STA $20,X
     memory.writeByte(0x8001, 0x20);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertMemory(0x0028, 0x55); // 0x20 + 0x08 = 0x28
     assertEqual(cpu.getPC(), 0x8002);
     assertEqual(cycles, 4);
@@ -73,10 +73,10 @@ export function testStoreInstructions() {
     cpu.setA(0x9A);
     memory.writeByte(0x8000, 0x8D); // STA $1234
     memory.writeWord(0x8001, 0x1234);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertMemory(0x1234, 0x9A);
     assertEqual(cpu.getPC(), 0x8003);
     assertEqual(cycles, 4);
@@ -88,10 +88,10 @@ export function testStoreInstructions() {
     cpu.setX(0x10);
     memory.writeByte(0x8000, 0x9D); // STA $2000,X
     memory.writeWord(0x8001, 0x2000);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertMemory(0x2010, 0xCC); // 0x2000 + 0x10 = 0x2010
     assertEqual(cpu.getPC(), 0x8003);
     assertEqual(cycles, 5);
@@ -103,10 +103,10 @@ export function testStoreInstructions() {
     cpu.setY(0x05);
     memory.writeByte(0x8000, 0x99); // STA $3000,Y
     memory.writeWord(0x8001, 0x3000);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertMemory(0x3005, 0x33); // 0x3000 + 0x05 = 0x3005
     assertEqual(cpu.getPC(), 0x8003);
     assertEqual(cycles, 5);
@@ -119,10 +119,10 @@ export function testStoreInstructions() {
     memory.writeWord(0x0048, 0x4000); // $48,$49 = $4000
     memory.writeByte(0x8000, 0x81); // STA ($40,X)
     memory.writeByte(0x8001, 0x40);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertMemory(0x4000, 0x77);
     assertEqual(cpu.getPC(), 0x8002);
     assertEqual(cycles, 6);
@@ -135,10 +135,10 @@ export function testStoreInstructions() {
     memory.writeWord(0x0050, 0x8000); // $50,$51 = $8000
     memory.writeByte(0x8000, 0x91); // STA ($50),Y
     memory.writeByte(0x8001, 0x50);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertMemory(0x8012, 0x88); // 0x8000 + 0x12 = 0x8012
     assertEqual(cpu.getPC(), 0x8002);
     assertEqual(cycles, 6);
@@ -149,10 +149,10 @@ export function testStoreInstructions() {
     cpu.setX(0x66);
     memory.writeByte(0x8000, 0x86); // STX $60
     memory.writeByte(0x8001, 0x60);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertMemory(0x0060, 0x66);
     assertEqual(cpu.getPC(), 0x8002);
     assertEqual(cycles, 3);
@@ -164,10 +164,10 @@ export function testStoreInstructions() {
     cpu.setY(0x08);
     memory.writeByte(0x8000, 0x96); // STX $20,Y
     memory.writeByte(0x8001, 0x20);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertMemory(0x0028, 0x44); // 0x20 + 0x08 = 0x28
     assertEqual(cpu.getPC(), 0x8002);
     assertEqual(cycles, 4);
@@ -178,10 +178,10 @@ export function testStoreInstructions() {
     cpu.setX(0x99);
     memory.writeByte(0x8000, 0x8E); // STX $8000
     memory.writeWord(0x8001, 0x8000);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertMemory(0x8000, 0x99);
     assertEqual(cpu.getPC(), 0x8003);
     assertEqual(cycles, 4);
@@ -192,10 +192,10 @@ export function testStoreInstructions() {
     cpu.setY(0x22);
     memory.writeByte(0x8000, 0x84); // STY $70
     memory.writeByte(0x8001, 0x70);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertMemory(0x0070, 0x22);
     assertEqual(cpu.getPC(), 0x8002);
     assertEqual(cycles, 3);
@@ -207,10 +207,10 @@ export function testStoreInstructions() {
     cpu.setX(0x05);
     memory.writeByte(0x8000, 0x94); // STY $80,X
     memory.writeByte(0x8001, 0x80);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertMemory(0x0085, 0x11); // 0x80 + 0x05 = 0x85
     assertEqual(cpu.getPC(), 0x8002);
     assertEqual(cycles, 4);
@@ -221,10 +221,10 @@ export function testStoreInstructions() {
     cpu.setY(0xEE);
     memory.writeByte(0x8000, 0x8C); // STY $9000
     memory.writeWord(0x8001, 0x9000);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertMemory(0x9000, 0xEE);
     assertEqual(cpu.getPC(), 0x8003);
     assertEqual(cycles, 4);
@@ -233,7 +233,7 @@ export function testStoreInstructions() {
   // 测试存储到同一个位置的多个指令
   runTest('多个存储指令到同一位置', () => {
     const testAddr = 0x2000;
-    
+
     // STA
     cpu.setA(0xAA);
     memory.writeByte(0x8000, 0x8D); // STA $2000
@@ -241,7 +241,7 @@ export function testStoreInstructions() {
     cpu.setPC(0x8000);
     cpu.step();
     assertMemory(testAddr, 0xAA);
-    
+
     // STX
     cpu.setX(0xBB);
     memory.writeByte(0x8003, 0x8E); // STX $2000
@@ -249,7 +249,7 @@ export function testStoreInstructions() {
     cpu.setPC(0x8003);
     cpu.step();
     assertMemory(testAddr, 0xBB);
-    
+
     // STY
     cpu.setY(0xCC);
     memory.writeByte(0x8007, 0x8C); // STY $2000
@@ -265,10 +265,10 @@ export function testStoreInstructions() {
     cpu.setA(0x33);
     memory.writeByte(0x8000, 0x95); // STA $80,X
     memory.writeByte(0x8001, 0x80);
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     // 0x80 + 0xF0 = 0x170，零页回绕到 0x70
     assertMemory(0x0070, 0x33);
   });

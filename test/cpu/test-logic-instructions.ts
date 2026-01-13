@@ -1,11 +1,11 @@
 // 逻辑指令测试
-import { CPU } from '../index.js';
-import { TestCartridge } from '../../../test-cartridge.js';
-import { Memory } from '../../memory/index.js';
+import { CPU } from '@/core/cpu/index.js';
+import { TestCartridge } from '../test-cartridge.js';
+import { Memory } from '@/core/memory/index.js';
 
 export function testLogicInstructions() {
   console.log('🧪 开始逻辑指令测试...');
-  
+
   const memory = new Memory();
   const testCartridge = new TestCartridge();
   memory.setTestCartridge(testCartridge);
@@ -37,10 +37,10 @@ export function testLogicInstructions() {
     cpu.setA(0xF0);
     memory.writeByte(0x8000, 0x29); // AND #$0F
     memory.writeByte(0x8001, 0x0F);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x00); // 0xF0 & 0x0F = 0x00
     assertEqual(cpu.getFlag('Z'), true);
     assertEqual(cpu.getFlag('N'), false);
@@ -51,10 +51,10 @@ export function testLogicInstructions() {
     cpu.setA(0xAA);
     memory.writeByte(0x8000, 0x29); // AND #$55
     memory.writeByte(0x8001, 0x55);
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x00); // 0xAA & 0x55 = 0x00
     assertEqual(cpu.getFlag('Z'), true);
   });
@@ -63,10 +63,10 @@ export function testLogicInstructions() {
     cpu.setA(0xFF);
     memory.writeByte(0x8000, 0x29); // AND #$80
     memory.writeByte(0x8001, 0x80);
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x80); // 0xFF & 0x80 = 0x80
     assertEqual(cpu.getFlag('Z'), false);
     assertEqual(cpu.getFlag('N'), true);
@@ -77,10 +77,10 @@ export function testLogicInstructions() {
     cpu.setA(0x0F);
     memory.writeByte(0x8000, 0x09); // ORA #$F0
     memory.writeByte(0x8001, 0xF0);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getA(), 0xFF); // 0x0F | 0xF0 = 0xFF
     assertEqual(cpu.getFlag('Z'), false);
     assertEqual(cpu.getFlag('N'), true);
@@ -91,10 +91,10 @@ export function testLogicInstructions() {
     cpu.setA(0x55);
     memory.writeByte(0x8000, 0x09); // ORA #$00
     memory.writeByte(0x8001, 0x00);
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x55); // 0x55 | 0x00 = 0x55
     assertEqual(cpu.getFlag('Z'), false);
     assertEqual(cpu.getFlag('N'), false);
@@ -105,10 +105,10 @@ export function testLogicInstructions() {
     cpu.setA(0xAA);
     memory.writeByte(0x8000, 0x49); // EOR #$55
     memory.writeByte(0x8001, 0x55);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getA(), 0xFF); // 0xAA ^ 0x55 = 0xFF
     assertEqual(cpu.getFlag('Z'), false);
     assertEqual(cpu.getFlag('N'), true);
@@ -119,10 +119,10 @@ export function testLogicInstructions() {
     cpu.setA(0x33);
     memory.writeByte(0x8000, 0x49); // EOR #$33
     memory.writeByte(0x8001, 0x33);
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x00); // 0x33 ^ 0x33 = 0x00
     assertEqual(cpu.getFlag('Z'), true);
     assertEqual(cpu.getFlag('N'), false);
@@ -132,10 +132,10 @@ export function testLogicInstructions() {
     cpu.setA(0x0F);
     memory.writeByte(0x8000, 0x49); // EOR #$FF
     memory.writeByte(0x8001, 0xFF);
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getA(), 0xF0); // 0x0F ^ 0xFF = 0xF0
     assertEqual(cpu.getFlag('Z'), false);
     assertEqual(cpu.getFlag('N'), true);
@@ -147,10 +147,10 @@ export function testLogicInstructions() {
     memory.writeByte(0x0050, 0xF0);
     memory.writeByte(0x8000, 0x24); // BIT $50
     memory.writeByte(0x8001, 0x50);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x0F); // A不变
     assertEqual(cpu.getFlag('Z'), true); // 0x0F & 0xF0 = 0x00
     assertEqual(cpu.getFlag('V'), true); // bit 6 of 0xF0 is 1
@@ -163,10 +163,10 @@ export function testLogicInstructions() {
     memory.writeByte(0x0060, 0x81);
     memory.writeByte(0x8000, 0x24); // BIT $60
     memory.writeByte(0x8001, 0x60);
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getFlag('Z'), false); // 0x88 & 0x81 = 0x80 != 0
     assertEqual(cpu.getFlag('V'), false); // bit 6 of 0x81 is 0
     assertEqual(cpu.getFlag('N'), true); // bit 7 of 0x81 is 1
@@ -178,10 +178,10 @@ export function testLogicInstructions() {
     memory.writeByte(0x2000, 0xC4);
     memory.writeByte(0x8000, 0x2C); // BIT $2000
     memory.writeWord(0x8001, 0x2000);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getFlag('Z'), false); // 0x55 & 0xC4 = 0x44 != 0
     assertEqual(cpu.getFlag('V'), true); // bit 6 of 0xC4 is 1
     assertEqual(cpu.getFlag('N'), true); // bit 7 of 0xC4 is 1
@@ -194,10 +194,10 @@ export function testLogicInstructions() {
     memory.writeByte(0x0070, 0x0F);
     memory.writeByte(0x8000, 0x25); // AND $70
     memory.writeByte(0x8001, 0x70);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x0F);
     assertEqual(cycles, 3);
   });
@@ -207,10 +207,10 @@ export function testLogicInstructions() {
     memory.writeByte(0x0080, 0x20);
     memory.writeByte(0x8000, 0x05); // ORA $80
     memory.writeByte(0x8001, 0x80);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x30);
     assertEqual(cycles, 3);
   });
@@ -220,10 +220,10 @@ export function testLogicInstructions() {
     memory.writeByte(0x0090, 0x33);
     memory.writeByte(0x8000, 0x45); // EOR $90
     memory.writeByte(0x8001, 0x90);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getA(), 0xFF);
     assertEqual(cycles, 3);
   });
@@ -234,10 +234,10 @@ export function testLogicInstructions() {
     memory.writeByte(0x3000, 0x55);
     memory.writeByte(0x8000, 0x2D); // AND $3000
     memory.writeWord(0x8001, 0x3000);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x00);
     assertEqual(cpu.getFlag('Z'), true);
     assertEqual(cycles, 4);
@@ -250,10 +250,10 @@ export function testLogicInstructions() {
     memory.writeByte(0x2010, 0x0F);
     memory.writeByte(0x8000, 0x3D); // AND $2000,X
     memory.writeWord(0x8001, 0x2000);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x0F);
     assertEqual(cycles, 4); // 不跨页
   });
@@ -264,10 +264,10 @@ export function testLogicInstructions() {
     memory.writeByte(0x1505, 0x88);
     memory.writeByte(0x8000, 0x19); // ORA $1500,Y
     memory.writeWord(0x8001, 0x1500);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x88);
     assertEqual(cpu.getFlag('N'), true);
     assertEqual(cycles, 4); // 不跨页
@@ -281,10 +281,10 @@ export function testLogicInstructions() {
     memory.writeByte(0x4000, 0x33);
     memory.writeByte(0x8000, 0x21); // AND ($50,X)
     memory.writeByte(0x8001, 0x50);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x33);
     assertEqual(cycles, 6);
   });
@@ -296,10 +296,10 @@ export function testLogicInstructions() {
     memory.writeByte(0x9003, 0xAA);
     memory.writeByte(0x8000, 0x51); // EOR ($60),Y
     memory.writeByte(0x8001, 0x60);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getA(), 0xAA);
     assertEqual(cpu.getFlag('N'), true);
     assertEqual(cycles, 5); // 不跨页
@@ -310,10 +310,10 @@ export function testLogicInstructions() {
     cpu.setA(0x80);
     memory.writeByte(0x8000, 0x29); // AND #$00
     memory.writeByte(0x8001, 0x00);
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x00);
     assertEqual(cpu.getFlag('Z'), true);
     assertEqual(cpu.getFlag('N'), false);
@@ -324,10 +324,10 @@ export function testLogicInstructions() {
     memory.writeByte(0x0070, 0x40); // 只有V标志位为1
     memory.writeByte(0x8000, 0x24); // BIT $70
     memory.writeByte(0x8001, 0x70);
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getFlag('Z'), true); // 0x01 & 0x40 = 0x00
     assertEqual(cpu.getFlag('V'), true); // bit 6 is 1
     assertEqual(cpu.getFlag('N'), false); // bit 7 is 0

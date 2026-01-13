@@ -126,6 +126,11 @@ export class Emulator {
         if (this.ppu.pollNMI()) {
           this.cpu.requestNMI();
         }
+
+        // 检查 PPU IRQ (MMC3)
+        if (this.ppu.pollIRQ()) {
+          this.cpu.requestIRQ();
+        }
       }
 
       // APU 执行对应周期
@@ -170,6 +175,11 @@ export class Emulator {
 
       if (this.ppu.pollNMI()) {
         this.cpu.requestNMI();
+      }
+
+      // 检查 PPU IRQ (MMC3)
+      if (this.ppu.pollIRQ()) {
+        this.cpu.requestIRQ();
       }
     }
 

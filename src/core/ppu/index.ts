@@ -33,11 +33,13 @@ export class PPU {
   
   private nmiOccur: boolean = false;  // NMI 发生标志
   private nmiOutput: boolean = false; // NMI 输出使能
-  
+
+  private irqOccurred: boolean = false; // IRQ 发生标志
+
   // 帧缓冲区
   private frameBuffer: Uint8Array;     // RGBA 格式，256x240 像素
   private nameTable: Uint8Array;      // 名称表缓冲区
-  
+
   // Cartridge 引用（用于 CHR ROM 访问）
   private cartridge: any = null;
 
@@ -84,6 +86,7 @@ export class PPU {
 
     this.nmiOccur = false;
     this.nmiOutput = false;
+    this.irqOccurred = false;
 
     // 清空缓冲区
     this.frameBuffer.fill(0);
@@ -101,12 +104,19 @@ export class PPU {
    */
   step(): boolean {
     let nmiOccurred = false;
-    
-    // 前景渲染阶段 (扫描线 0-239)
+
+    // 渲染阶段 (扫描线 0-239)
     if (this.scanline >= 0 && this.scanline < 240) {
       // 在每个扫描线结束时渲染
       if (this.cycle === 340) {
         this.renderScanline();
+      }
+
+      // MMC3 IRQ: 在扫描线 260-260 时检查（渲染结束后）
+      if (this.cycle === 260 && this.cartridge && this.cartridge.scanlineCounter) {
+        if (this.cartridge.scanlineCounter()) {
+          this.irqOccurred = true;
+        }
       }
     }
     // VBlank 阶段
@@ -131,6 +141,7 @@ export class PPU {
         }
       }
     }
+    // 扫描线 240, 242-260 不做任何事 (空扫描线)
 
     this.cycle++;
     if (this.cycle >= 341) {
@@ -220,10 +231,7 @@ export class PPU {
       }
     }
 
-    // 在第一行输出调试信息
-    if (this.scanline === 0) {
-      console.log(`PPU Debug: ctrl=0x${this.ctrl.toString(16)}, mask=0x${this.mask.toString(16)}, nameTableBase=0x${nameTableBase.toString(16)}`);
-    }
+    // 移除调试信息输出
   }
 
   /**
@@ -320,22 +328,29 @@ export class PPU {
 
   /**
    * 获取NES颜色值
+   * 使用标准的 NES 2C02 调色板 (64色)
+   * 参考: https://www.nesdev.org/wiki/PPU_palettes
    */
   private getNESColor(index: number): number {
-    // NES调色板（标准2C02色板）
+    // NES 标准调色板 (2C02) - 64 色 RGB 映射表
+    // 格式: 0xRRGGBB
     const nesPalette = [
+      // 色相 0x0x (第0行: 灰度/深色)
       0x666666, 0x002A88, 0x1412A7, 0x3B00A4,
       0x5C007E, 0x6E0040, 0x6C0600, 0x561D00,
       0x333500, 0x0B4800, 0x005200, 0x004F08,
       0x00404D, 0x000000, 0x000000, 0x000000,
+      // 色相 0x1x (第1行: 中等亮度)
       0xADADAD, 0x155FD9, 0x4240FF, 0x7527FE,
       0xA01ACC, 0xB71E7B, 0xB53120, 0x994E00,
       0x6B6D00, 0x388700, 0x0C9300, 0x008F32,
       0x007C8D, 0x000000, 0x000000, 0x000000,
+      // 色相 0x2x (第2行: 高亮度)
       0xFFFEFF, 0x64B0FF, 0x9290FF, 0xC676FF,
       0xF36AFF, 0xFE6ECC, 0xFE8170, 0xEA9E22,
       0xBCBE00, 0x88D800, 0x5CE430, 0x45E082,
       0x48CDDE, 0x4F4F4F, 0x000000, 0x000000,
+      // 色相 0x3x (第3行: 最亮)
       0xFFFEFF, 0xC0DFFF, 0xD3D2FF, 0xE8C8FF,
       0xFBC2FF, 0xFEC4EA, 0xFECCC5, 0xF7D8A5,
       0xE4E594, 0xCFEF96, 0xBDF4AB, 0xB3F3CC,
@@ -378,14 +393,12 @@ export class PPU {
         this.ctrl = value;
         this.t = (this.t & ~0x0C00) | ((value & 0x03) << 10);
         this.nmiOutput = !!(value & 0x80);
-        console.log(`PPUCTRL: ${value.toString(16)} NMI=${this.nmiOutput ? 1 : 0}`);
+        // 不输出日志，避免干扰测试
         break;
 
       case 0x2001: // PPUMASK
         this.mask = value;
-        const bgEnabled = (value & 0x08) !== 0;
-        const spriteEnabled = (value & 0x10) !== 0;
-        console.log(`PPUMASK: ${value.toString(16)} BG=${bgEnabled ? 1 : 0} SPRITE=${spriteEnabled ? 1 : 0}`);
+        // 不输出日志，避免干扰测试
         break;
 
       case 0x2003: // OAMADDR
@@ -443,17 +456,18 @@ export class PPU {
    */
   private readData(): number {
     const addr = this.v & 0x3FFF;
+    const result = this.readVRAM(addr);
     this.incrementV();
-    
+
     // VRAM 缓冲区处理
     if (addr < 0x3F00) {
       const bufferedValue = this.data;
-      this.data = this.readVRAM(addr);
+      this.data = result;
       return bufferedValue;
     } else {
-      // 调色板读取
-      this.data = this.readVRAM(addr);
-      return this.data;
+      // 调色板读取 - 直接返回，不需要缓冲
+      this.data = result;
+      return result;
     }
   }
 
@@ -515,12 +529,14 @@ export class PPU {
     } else {
       // 调色板
       const paletteAddr = address % 32;
-      if (paletteAddr % 4 === 0 && paletteAddr > 0) {
-        // 镜像处理
+
+      // 处理调色板镜像: 0x10, 0x14, 0x18, 0x1C 镜像到 0x00
+      if (paletteAddr === 0x00 || paletteAddr === 0x10 || paletteAddr === 0x14 || paletteAddr === 0x18 || paletteAddr === 0x1C) {
         this.paletteRAM[0] = value;
-        for (let i = 4; i < 32; i += 4) {
-          this.paletteRAM[i] = value;
-        }
+        this.paletteRAM[0x10] = value;
+        this.paletteRAM[0x14] = value;
+        this.paletteRAM[0x18] = value;
+        this.paletteRAM[0x1C] = value;
       } else {
         this.paletteRAM[paletteAddr] = value;
       }
@@ -569,6 +585,21 @@ export class PPU {
   pollNMI(): boolean {
     const result = this.nmiOccur;
     this.nmiOccur = false;
+    return result;
+  }
+
+  /**
+   * 检查是否有 IRQ 请求
+   */
+  pollIRQ(): boolean {
+    const result = this.irqOccurred;
+    this.irqOccurred = false;
+
+    // 如果 cartridge 有 clearIRQ 方法，调用它
+    if (this.cartridge && this.cartridge.clearIRQ) {
+      this.cartridge.clearIRQ();
+    }
+
     return result;
   }
 

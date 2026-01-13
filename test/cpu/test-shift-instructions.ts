@@ -1,11 +1,11 @@
 // 移位指令测试
-import { CPU } from '../index.js';
-import { TestCartridge } from '../../../test-cartridge.js';
-import { Memory } from '../../memory/index.js';
+import { CPU } from '@/core/cpu/index.js';
+import { TestCartridge } from '../test-cartridge.js';
+import { Memory } from '@/core/memory/index.js';
 
 export function testShiftInstructions() {
   console.log('🧪 开始移位指令测试...');
-  
+
   const memory = new Memory();
   const testCartridge = new TestCartridge();
   memory.setTestCartridge(testCartridge);
@@ -43,10 +43,10 @@ export function testShiftInstructions() {
   runTest('ASL A - 无进位左移', () => {
     cpu.setA(0x40);
     memory.writeByte(0x8000, 0x0A); // ASL A
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x80);
     assertEqual(cpu.getFlag('C'), false);
     assertEqual(cpu.getFlag('Z'), false);
@@ -57,10 +57,10 @@ export function testShiftInstructions() {
   runTest('ASL A - 有进位左移', () => {
     cpu.setA(0x80);
     memory.writeByte(0x8000, 0x0A); // ASL A
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x00);
     assertEqual(cpu.getFlag('C'), true);
     assertEqual(cpu.getFlag('Z'), true);
@@ -71,10 +71,10 @@ export function testShiftInstructions() {
   runTest('LSR A - 无进位右移', () => {
     cpu.setA(0x08);
     memory.writeByte(0x8000, 0x4A); // LSR A
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x04);
     assertEqual(cpu.getFlag('C'), false);
     assertEqual(cpu.getFlag('Z'), false);
@@ -85,10 +85,10 @@ export function testShiftInstructions() {
   runTest('LSR A - 有进位右移', () => {
     cpu.setA(0x01);
     memory.writeByte(0x8000, 0x4A); // LSR A
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x00);
     assertEqual(cpu.getFlag('C'), true);
     assertEqual(cpu.getFlag('Z'), true);
@@ -100,10 +100,10 @@ export function testShiftInstructions() {
     cpu.setA(0x40);
     cpu.setFlag('C', false);
     memory.writeByte(0x8000, 0x2A); // ROL A
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x80);
     assertEqual(cpu.getFlag('C'), false);
     assertEqual(cpu.getFlag('Z'), false);
@@ -115,10 +115,10 @@ export function testShiftInstructions() {
     cpu.setA(0x40);
     cpu.setFlag('C', true);
     memory.writeByte(0x8000, 0x2A); // ROL A
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x81); // 0x40 << 1 + C(1) = 0x81
     assertEqual(cpu.getFlag('C'), false);
     assertEqual(cpu.getFlag('Z'), false);
@@ -129,10 +129,10 @@ export function testShiftInstructions() {
     cpu.setA(0x80);
     cpu.setFlag('C', false);
     memory.writeByte(0x8000, 0x2A); // ROL A
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x00);
     assertEqual(cpu.getFlag('C'), true);
     assertEqual(cpu.getFlag('Z'), true);
@@ -144,10 +144,10 @@ export function testShiftInstructions() {
     cpu.setA(0x08);
     cpu.setFlag('C', false);
     memory.writeByte(0x8000, 0x6A); // ROR A
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x04);
     assertEqual(cpu.getFlag('C'), false);
     assertEqual(cpu.getFlag('Z'), false);
@@ -159,10 +159,10 @@ export function testShiftInstructions() {
     cpu.setA(0x08);
     cpu.setFlag('C', true);
     memory.writeByte(0x8000, 0x6A); // ROR A
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x84); // 0x08 >> 1 + (C << 7) = 0x84
     assertEqual(cpu.getFlag('C'), false);
     assertEqual(cpu.getFlag('Z'), false);
@@ -173,10 +173,10 @@ export function testShiftInstructions() {
     cpu.setA(0x01);
     cpu.setFlag('C', false);
     memory.writeByte(0x8000, 0x6A); // ROR A
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x00);
     assertEqual(cpu.getFlag('C'), true);
     assertEqual(cpu.getFlag('Z'), true);
@@ -188,10 +188,10 @@ export function testShiftInstructions() {
     memory.writeByte(0x0050, 0x40);
     memory.writeByte(0x8000, 0x06); // ASL $50
     memory.writeByte(0x8001, 0x50);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertMemory(0x0050, 0x80);
     assertEqual(cpu.getFlag('C'), false);
     assertEqual(cpu.getFlag('N'), true);
@@ -202,10 +202,10 @@ export function testShiftInstructions() {
     memory.writeByte(0x0060, 0x08);
     memory.writeByte(0x8000, 0x46); // LSR $60
     memory.writeByte(0x8001, 0x60);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertMemory(0x0060, 0x04);
     assertEqual(cpu.getFlag('C'), false);
     assertEqual(cycles, 5);
@@ -216,10 +216,10 @@ export function testShiftInstructions() {
     cpu.setFlag('C', false);
     memory.writeByte(0x8000, 0x26); // ROL $70
     memory.writeByte(0x8001, 0x70);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertMemory(0x0070, 0x00);
     assertEqual(cpu.getFlag('C'), true);
     assertEqual(cpu.getFlag('Z'), true);
@@ -231,10 +231,10 @@ export function testShiftInstructions() {
     cpu.setFlag('C', false);
     memory.writeByte(0x8000, 0x66); // ROR $80
     memory.writeByte(0x8001, 0x80);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertMemory(0x0080, 0x00);
     assertEqual(cpu.getFlag('C'), true);
     assertEqual(cycles, 5);
@@ -245,10 +245,10 @@ export function testShiftInstructions() {
     memory.writeByte(0x2000, 0x7F);
     memory.writeByte(0x8000, 0x0E); // ASL $2000
     memory.writeWord(0x8001, 0x2000);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertMemory(0x2000, 0xFE);
     assertEqual(cpu.getFlag('C'), false);
     assertEqual(cpu.getFlag('N'), true);
@@ -261,10 +261,10 @@ export function testShiftInstructions() {
     memory.writeByte(0x0060, 0x40); // 0x50 + 0x10 = 0x60
     memory.writeByte(0x8000, 0x16); // ASL $50,X
     memory.writeByte(0x8001, 0x50);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertMemory(0x0060, 0x80);
     assertEqual(cpu.getFlag('N'), true);
     assertEqual(cycles, 6);
@@ -276,10 +276,10 @@ export function testShiftInstructions() {
     memory.writeByte(0x2008, 0x10); // 0x2000 + 0x08 = 0x2008
     memory.writeByte(0x8000, 0x5E); // LSR $2000,X
     memory.writeWord(0x8001, 0x2000);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertMemory(0x2008, 0x08);
     assertEqual(cpu.getFlag('C'), false);
     assertEqual(cycles, 7);
@@ -290,10 +290,10 @@ export function testShiftInstructions() {
     memory.writeByte(0x0030, 0x7F);
     memory.writeByte(0x8000, 0xE6); // INC $30
     memory.writeByte(0x8001, 0x30);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertMemory(0x0030, 0x80);
     assertEqual(cpu.getFlag('Z'), false);
     assertEqual(cpu.getFlag('N'), true);
@@ -304,10 +304,10 @@ export function testShiftInstructions() {
     memory.writeByte(0x3000, 0xFF);
     memory.writeByte(0x8000, 0xEE); // INC $3000
     memory.writeWord(0x8001, 0x3000);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertMemory(0x3000, 0x00);
     assertEqual(cpu.getFlag('Z'), true);
     assertEqual(cpu.getFlag('N'), false);
@@ -319,10 +319,10 @@ export function testShiftInstructions() {
     memory.writeByte(0x0045, 0x00); // 0x40 + 0x05 = 0x45
     memory.writeByte(0x8000, 0xF6); // INC $40,X
     memory.writeByte(0x8001, 0x40);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertMemory(0x0045, 0x01);
     assertEqual(cpu.getFlag('Z'), false);
     assertEqual(cpu.getFlag('N'), false);
@@ -334,10 +334,10 @@ export function testShiftInstructions() {
     memory.writeByte(0x0070, 0x01);
     memory.writeByte(0x8000, 0xC6); // DEC $70
     memory.writeByte(0x8001, 0x70);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertMemory(0x0070, 0x00);
     assertEqual(cpu.getFlag('Z'), true);
     assertEqual(cpu.getFlag('N'), false);
@@ -348,10 +348,10 @@ export function testShiftInstructions() {
     memory.writeByte(0x4000, 0x80);
     memory.writeByte(0x8000, 0xCE); // DEC $4000
     memory.writeWord(0x8001, 0x4000);
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertMemory(0x4000, 0x7F);
     assertEqual(cpu.getFlag('Z'), false);
     assertEqual(cpu.getFlag('N'), false);
@@ -362,10 +362,10 @@ export function testShiftInstructions() {
   runTest('INX - X增1', () => {
     cpu.setX(0xFF);
     memory.writeByte(0x8000, 0xE8); // INX
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getX(), 0x00);
     assertEqual(cpu.getFlag('Z'), true);
     assertEqual(cpu.getFlag('N'), false);
@@ -375,10 +375,10 @@ export function testShiftInstructions() {
   runTest('INY - Y增1', () => {
     cpu.setY(0x7F);
     memory.writeByte(0x8000, 0xC8); // INY
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getY(), 0x80);
     assertEqual(cpu.getFlag('Z'), false);
     assertEqual(cpu.getFlag('N'), true);
@@ -389,10 +389,10 @@ export function testShiftInstructions() {
   runTest('DEX - X减1', () => {
     cpu.setX(0x01);
     memory.writeByte(0x8000, 0xCA); // DEX
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getX(), 0x00);
     assertEqual(cpu.getFlag('Z'), true);
     assertEqual(cpu.getFlag('N'), false);
@@ -402,10 +402,10 @@ export function testShiftInstructions() {
   runTest('DEY - Y减1', () => {
     cpu.setY(0x00);
     memory.writeByte(0x8000, 0x88); // DEY
-    
+
     cpu.setPC(0x8000);
     const cycles = cpu.step();
-    
+
     assertEqual(cpu.getY(), 0xFF);
     assertEqual(cpu.getFlag('Z'), false);
     assertEqual(cpu.getFlag('N'), true);
@@ -416,10 +416,10 @@ export function testShiftInstructions() {
   runTest('ASL A - 最高位测试', () => {
     cpu.setA(0x80);
     memory.writeByte(0x8000, 0x0A); // ASL A
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x00);
     assertEqual(cpu.getFlag('C'), true);
     assertEqual(cpu.getFlag('Z'), true);
@@ -430,10 +430,10 @@ export function testShiftInstructions() {
     cpu.setA(0x01);
     cpu.setFlag('C', false);
     memory.writeByte(0x8000, 0x6A); // ROR A
-    
+
     cpu.setPC(0x8000);
     cpu.step();
-    
+
     assertEqual(cpu.getA(), 0x00);
     assertEqual(cpu.getFlag('C'), true);
     assertEqual(cpu.getFlag('Z'), true);

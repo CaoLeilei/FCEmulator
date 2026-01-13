@@ -4,12 +4,12 @@
 
 import { CPU } from './core/cpu/index.js';
 import { Memory } from './core/memory/index.js';
-import { TestCartridge } from './test-cartridge.js';
+import { TestCartridge } from '../test/test-cartridge.js';
 
 // 导入生成的测试套件
-import { 
-  runAllTests, 
-  TEST_SUITES, 
+import {
+  runAllTests,
+  TEST_SUITES,
   TEST_STATS,
   testBasicInstructions as testBasicInstructionsSuite,
   testLoadInstructions as testLoadInstructionsSuite,
@@ -22,7 +22,7 @@ import {
   testStackInstructions,
   testInstructionDecoder,
   testCompatibility
-} from './core/cpu/tests/index.js';
+} from '../test/cpu/index.js';
 
 /**
  * 主测试函数 - 运行完整的CPU测试套件
@@ -72,7 +72,7 @@ export function testCPUInstructions(options?: {
 function runOriginalTests(): void {
   const memory = new Memory();
   const cpu = new CPU(memory);
-  
+
   // 设置测试卡带
   const testCartridge = new TestCartridge();
   memory.setTestCartridge(testCartridge);
@@ -100,7 +100,7 @@ function runOriginalTests(): void {
  */
 function runSpecificTestSuite(suiteName: string, verbose: boolean = false): void {
   const suite = TEST_SUITES.find(s => s.name.includes(suiteName) || s.function.includes(suiteName));
-  
+
   if (!suite) {
     console.error(`❌ 未找到测试套件: ${suiteName}`);
     console.log('可用的测试套件:');
@@ -109,11 +109,11 @@ function runSpecificTestSuite(suiteName: string, verbose: boolean = false): void
   }
 
   console.log(`🎯 运行特定测试套件: ${suite.name}`);
-  
+
   try {
     // 使用已导入的函数
     let testFunction: (() => boolean) | undefined;
-    
+
     switch (suite.function) {
       case 'testBasicInstructions':
         testFunction = testBasicInstructionsSuite;
@@ -149,12 +149,12 @@ function runSpecificTestSuite(suiteName: string, verbose: boolean = false): void
         testFunction = testCompatibility;
         break;
     }
-    
+
     if (testFunction) {
       const startTime = Date.now();
       const result = testFunction();
       const endTime = Date.now();
-      
+
       console.log(`✅ ${suite.name} 完成 (耗时: ${endTime - startTime}ms)`);
       if (verbose && result) {
         console.log('详细结果:', result);
@@ -312,16 +312,16 @@ function testStoreInstructions(cpu: CPU, memory: Memory): void {
 // 在浏览器控制台运行测试
 if (typeof window !== 'undefined') {
   const win = window as any;
-  
+
   // 主测试函数
   win.testCPUInstructions = testCPUInstructions;
-  
+
   // 便捷函数
   win.runQuickTest = runQuickTest;
   win.runDetailedTest = runDetailedTest;
   win.runTestSuite = runTestSuite;
   win.showAvailableTestSuites = showAvailableTestSuites;
-  
+
   // 单独的测试套件
   win.testBasicInstructions = testBasicInstructionsSuite;
   win.testLoadInstructions = testLoadInstructionsSuite;
@@ -334,7 +334,7 @@ if (typeof window !== 'undefined') {
   win.testStackInstructions = testStackInstructions;
   win.testInstructionDecoder = testInstructionDecoder;
   win.testCompatibility = testCompatibility;
-  
+
   console.log('💡 CPU测试函数已加载到浏览器控制台:');
   console.log('   - testCPUInstructions() - 主测试函数');
   console.log('   - runQuickTest() - 快速测试');

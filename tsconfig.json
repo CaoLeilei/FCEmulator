@@ -3,22 +3,48 @@
     "target": "ES2022",
     "useDefineForClassFields": true,
     "module": "ESNext",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": ["vite/client"],
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "types": [
+      "vite/client"
+    ],
     "skipLibCheck": true,
-
     /* Bundler mode */
     "moduleResolution": "node",
     "moduleDetection": "force",
     "noEmit": false,
     "outDir": "dist",
-
     /* Linting */
     "strict": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ]
+    }
   },
-  "include": ["src"]
+  "include": [
+    "src",
+    "test/cpu/basic.test.ts",
+    "test/cpu/index.ts",
+    "test/cpu/load.test.ts",
+    "test/cpu/run-all-tests.ts",
+    "test/cpu/test-addressing-modes.ts",
+    "test/cpu/test-arithmetic-instructions.ts",
+    "test/cpu/test-branch-instructions.ts",
+    "test/cpu/test-compatibility.ts",
+    "test/cpu/test-instruction-decoder.ts",
+    "test/cpu/test-logic-instructions.ts",
+    "test/cpu/test-shift-instructions.ts",
+    "test/cpu/test-stack-instructions.ts",
+    "test/cpu/test-store-instructions.ts",
+    "test/test-cartridge.ts"
+  ]
 }

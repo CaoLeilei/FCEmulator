@@ -8,14 +8,14 @@ import { Memory } from '../memory/index.js';
 import { Cartridge as CartridgeClass } from '../cartridge/index.js';
 import { PPU } from '../ppu/index.js';
 import { APU } from '../apu/index.js';
-import { InputController, setupKeyboardEvents } from '../input/index.js';
+// import { InputController, setupKeyboardEvents } from '../input/index.js';
 
 export class Emulator {
   private cpu: CPU;
   private memory: Memory;
   private ppu: PPU;
   private apu: APU;
-  private input: InputController;
+  private input: null;
   private cartridge: CartridgeClass | null = null;
 
   private cycleCount: number = 0;
@@ -34,7 +34,7 @@ export class Emulator {
     this.cpu = new CPU(this.memory);
     this.ppu = new PPU();
     this.apu = new APU();
-    this.input = new InputController();
+    this.input = null; // new InputController();
 
     this.audioBuffer = new Float32Array(4096);
     this.setupComponents();
@@ -49,7 +49,7 @@ export class Emulator {
     this.cpu.reset();
     this.ppu.reset();
     this.apu.reset();
-    this.input.reset();
+    // this.input.reset();
     this.cycleCount = 0;
 
     if (this.cartridge) {
@@ -86,6 +86,13 @@ export class Emulator {
 
     console.log('=== Emulator starting ===');
     this.isRunning = true;
+
+    // 临时测试：手动设置 PPUMASK 来测试渲染
+    setTimeout(() => {
+      console.log('Temporarily forcing PPUMASK to enable rendering for testing');
+      this.ppu.writeRegister(0x2001, 0x1e); // 启用背景和精灵显示
+    }, 5000); // 5秒后手动启用
+
     this.run();
   }
 
@@ -119,6 +126,9 @@ export class Emulator {
     const cyclesPerFrame = 29781; // NTSC: ~60 FPS
     let cyclesThisFrame = 0;
     let instructionCount = 0; // 调试：指令计数
+
+    // 调试：追踪前 3 帧的所有指令（只追踪写 $2001 的）
+    const trackInstructions = this.ppu.getState().frame < 3;
 
     while (cyclesThisFrame < cyclesPerFrame) {
       // 执行剩余的 PPU 周期
@@ -176,6 +186,16 @@ export class Emulator {
     // 调试：输出指令计数
     if (this.ppu.getState().frame <= 10) {
       console.log(`Frame ${this.ppu.getState().frame}: executed ${instructionCount} instructions, ${cyclesThisFrame} cycles`);
+    }
+
+    // 测试：在第 20 帧的 VBlank 期间强制启用 PPUMASK（如果 ROM 没有启用）
+    const currentFrame = this.ppu.getState().frame;
+    if (currentFrame === 20 && this.ppu.getState().mask === 0x00) {
+      console.log('>>> Force enabling PPUMASK after 20 frames for testing <<<');
+      // 在 VBlank 结束前启用，给 ROM 时间写入数据
+      setTimeout(() => {
+        this.ppu.writeRegister(0x2001, 0x1e); // 启用背景和精灵
+      }, 10);
     }
 
     // 渲染帧缓冲区
@@ -263,23 +283,23 @@ export class Emulator {
    */
   private setupAudio(): void {
     try {
-      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      // this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
 
-      // 创建音频处理
-      const scriptNode = this.audioContext.createScriptProcessor(512, 0, 1);
-      scriptNode.onaudioprocess = (event) => {
-        const outputBuffer = event.outputBuffer.getChannelData(0);
+      // // 创建音频处理
+      // const scriptNode = this.audioContext.createScriptProcessor(512, 0, 1);
+      // scriptNode.onaudioprocess = (event) => {
+      //   const outputBuffer = event.outputBuffer.getChannelData(0);
 
-        for (let i = 0; i < outputBuffer.length; i++) {
-          if (this.audioBufferIndex > 0) {
-            outputBuffer[i] = this.audioBuffer[this.audioBufferIndex--];
-          } else {
-            outputBuffer[i] = 0;
-          }
-        }
-      };
+      //   for (let i = 0; i < outputBuffer.length; i++) {
+      //     if (this.audioBufferIndex > 0) {
+      //       outputBuffer[i] = this.audioBuffer[this.audioBufferIndex--];
+      //     } else {
+      //       outputBuffer[i] = 0;
+      //     }
+      //   }
+      // };
 
-      scriptNode.connect(this.audioContext.destination);
+      // scriptNode.connect(this.audioContext.destination);
     } catch (error) {
       console.warn('Audio initialization failed:', error);
     }
@@ -289,10 +309,10 @@ export class Emulator {
    * 设置输入系统
    */
   private setupInput(): void {
-    this.cleanupKeyboard = setupKeyboardEvents(this.input);
+    // this.cleanupKeyboard = setupKeyboardEvents(this.input);
 
     // 设置输入控制器到内存映射
-    this.memory.setInputController(this.input);
+    // this.memory.setInputController(this.input);
   }
 
   /**
@@ -383,7 +403,7 @@ export class Emulator {
    * 获取控制器状态
    */
   getControllerState(index: number) {
-    return this.input.getControllerState(index);
+    // return this.input.getControllerState(index);
   }
 
   /**
@@ -404,9 +424,9 @@ export class Emulator {
   }
 }
 
-// 类型声明扩展
-declare global {
-  interface Window {
-    webkitAudioContext: typeof AudioContext;
-  }
-}
+// // 类型声明扩展
+// declare global {
+//   interface Window {
+//     webkitAudioContext: typeof AudioContext;
+//   }
+// }

@@ -164,6 +164,9 @@ export class PPU {
   private renderScanline(): void {
     // 只在可见扫描线渲染 (0-239)
     if (this.scanline >= 0 && this.scanline < 240) {
+      if (this.scanline === 0) {
+        console.log(`renderScanline called: scanline=${this.scanline}, mask=${this.mask.toString(16)}, bgEnabled=${(this.mask & 0x08) !== 0}`);
+      }
       this.renderBackgroundScanline();
       this.renderSpritesScanline();
     }
@@ -192,6 +195,14 @@ export class PPU {
 
     let pixelsRendered = 0;
 
+    // 调试：只在 scanline 0 输出
+    if (this.scanline === 0) {
+      console.log(`Rendering scanline 0: mask=${this.mask.toString(16)}, ctrl=${this.ctrl.toString(16)}, nameTableBase=${nameTableBase.toString(16)}`);
+      // 显示名称表前 32 字节
+      const nametableData = Array.from(this.nameTable.slice(0, 32)).map(x => x.toString(16).padStart(2,'0')).join(' ');
+      console.log(`NameTable[0x0000-0x001F]: ${nametableData}`);
+    }
+
     for (let tileX = 0; tileX < 32; tileX++) {
       const nameTableAddr = nameTableBase + nameTableOffset + tileX;
       const tileIndex = this.readVRAM(0x2000 + nameTableAddr);
@@ -211,6 +222,12 @@ export class PPU {
       // 计算调色板移位
       const attrShift = ((tileX & 2) << 1) | ((this.scanline >> 3) & 2);
       const paletteNum = (attrByte >> attrShift) & 0x03;
+
+      // 调试：第一个 tile
+      if (this.scanline === 0 && tileX === 0) {
+        console.log(`  First tile: tileIndex=${tileIndex}, patternL=${patternL.toString(16)}, patternH=${patternH.toString(16)}, attrByte=${attrByte.toString(16)}, paletteNum=${paletteNum}`);
+        console.log(`  Palette[0]=${this.paletteRAM[0].toString(16)}, Palette[paletteNum*4+0]=${this.paletteRAM[paletteNum * 4].toString(16)}, Palette[paletteNum*4+1]=${this.paletteRAM[paletteNum * 4 + 1].toString(16)}`);
+      }
 
       // 渲染8个像素
       for (let pixelX = 0; pixelX < 8; pixelX++) {
@@ -396,12 +413,12 @@ export class PPU {
         this.ctrl = value;
         this.t = (this.t & ~0x0C00) | ((value & 0x03) << 10);
         this.nmiOutput = !!(value & 0x80);
-        console.log(`PPU Write: $2000 = 0x${value.toString(16).padStart(2, '0')}`);
+        console.log(`PPU Write at scanline ${this.scanline}, cycle ${this.cycle}, frame ${this.frame}: $2000 = 0x${value.toString(16).padStart(2, '0')}, nmiOutput=${this.nmiOutput}`);
         break;
 
       case 1: // PPUMASK ($2001)
         this.mask = value;
-        console.log(`PPU Write: $2001 = 0x${value.toString(16).padStart(2, '0')} (bg: ${!!(value & 0x08)}, sprite: ${!!(value & 0x10)})`);
+        console.log(`PPU Write at scanline ${this.scanline}, cycle ${this.cycle}, frame ${this.frame}: $2001 = 0x${value.toString(16).padStart(2, '0')} (bg: ${!!(value & 0x08)}, sprite: ${!!(value & 0x10)})`);
         break;
 
       case 2: // OAMADDR ($2003)
@@ -418,10 +435,12 @@ export class PPU {
 
       case 5: // PPUADDR ($2006)
         this.writeAddr(value);
+        console.log(`PPU Write: $2006 = 0x${value.toString(16).padStart(2, '0')}, v=0x${this.v.toString(16)}`);
         break;
 
       case 6: // PPUDATA ($2007)
         this.writeData(value);
+        console.log(`PPU Write: $2007 = 0x${value.toString(16).padStart(2, '0')}`);
         break;
     }
   }
@@ -479,6 +498,8 @@ export class PPU {
    */
   private writeData(value: number): void {
     const addr = this.v & 0x3FFF;
+    // 调试：追踪所有 VRAM 写入
+    console.log(`VRAM write at scanline ${this.scanline}, cycle ${this.cycle}: addr=0x${addr.toString(16).padStart(4,'0')}, value=0x${value.toString(16).padStart(2,'0')}, renderingEnabled=${this.renderingEnabled()}`);
     this.writeVRAM(addr, value);
     this.incrementV();
   }

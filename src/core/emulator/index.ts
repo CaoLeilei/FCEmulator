@@ -3,12 +3,15 @@
  * 协调 CPU、PPU、APU、内存和卡带的工作
  */
 
+import raf from 'raf';
 import { CPU } from '../cpu/index.js';
 import { Memory } from '../memory/index.js';
 import { Cartridge as CartridgeClass } from '../cartridge/index.js';
 import { PPU } from '../ppu/index.js';
 import { APU } from '../apu/index.js';
 // import { InputController, setupKeyboardEvents } from '../input/index.js';
+
+const requestAnimationFrame = raf;
 
 export class Emulator {
   private cpu: CPU;
@@ -121,6 +124,7 @@ export class Emulator {
    * 运行模拟器主循环
    */
   private run(): void {
+    console.log('this.isRunning:', this.isRunning);
     if (!this.isRunning) return;
 
     const cyclesPerFrame = 29781; // NTSC: ~60 FPS

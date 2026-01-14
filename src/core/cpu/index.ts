@@ -14,7 +14,7 @@ export class CPU {
   private Y: number = 0;    // Y 寄存器
   private SP: number = 0xFD; // 栈指针
   private PC: number = 0;   // 程序计数器
-  
+
   // 状态寄存器标志位
   private flags: CPUFlags = {
     C: false, // 进位标志
@@ -34,7 +34,7 @@ export class CPU {
   // 中断标志
   private nmiRequested: boolean = false;
   private irqRequested: boolean = false;
-  
+
   constructor(memory: Memory) {
     this.memory = memory;
     this.decoder = new InstructionDecoder(this);
@@ -116,16 +116,16 @@ export class CPU {
   // 寄存器访问方法
   getA(): number { return this.A; }
   setA(value: number): void { this.A = value & 0xFF; }
-  
+
   getX(): number { return this.X; }
   setX(value: number): void { this.X = value & 0xFF; }
-  
+
   getY(): number { return this.Y; }
   setY(value: number): void { this.Y = value & 0xFF; }
-  
+
   getSP(): number { return this.SP; }
   setSP(value: number): void { this.SP = value & 0xFF; }
-  
+
   getPC(): number { return this.PC; }
   setPC(value: number): void { this.PC = value & 0xFFFF; }
 

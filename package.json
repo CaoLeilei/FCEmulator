@@ -2,7 +2,7 @@
   "name": "fc-emulator",
   "private": true,
   "version": "1.0.0",
-  "type": "module",
+  "type": "commonjs",
   "description": "FC/NES 模拟器 - 基于 TypeScript 的浏览器模拟器",
   "scripts": {
     "dev": "vite",
@@ -17,13 +17,6 @@
     "esm": true,
     "experimentalSpecifierResolution": "node"
   },
-  "devDependencies": {
-    "terser": "^5.0.0",
-    "ts-node": "^10.9.2",
-    "tsx": "^4.21.0",
-    "typescript": "~5.9.3",
-    "vite": "^5.0.0"
-  },
   "keywords": [
     "emulator",
     "nes",
@@ -34,5 +27,17 @@
     "web"
   ],
   "author": "Your Name",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "raf": "^3.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.8",
+    "@types/raf": "^3.4.3",
+    "terser": "^5.0.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
+    "typescript": "~5.9.3",
+    "vite": "^5.0.0"
+  }
 }

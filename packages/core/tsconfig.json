@@ -8,12 +8,8 @@
       "DOM",
       "DOM.Iterable"
     ],
-    "types": [
-      "vite/client"
-    ],
     "skipLibCheck": true,
     /* Bundler mode */
-    "moduleResolution": "node",
     "moduleDetection": "force",
     "noEmit": false,
     "outDir": "dist",
@@ -22,13 +18,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": [
-        "src/*"
-      ]
-    }
+    "noUncheckedSideEffectImports": true
   },
   "include": [
     "src",

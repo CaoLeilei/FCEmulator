@@ -9,6 +9,7 @@
     "test": "turbo test",
     "lint": "turbo lint",
     "clean": "turbo clean",
+    "test:core-cpu": "pnpm -F @fc/core run test:cpu",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "catalog": "pnpx codemod pnpm/catalog"
   },
@@ -17,6 +18,7 @@
   "license": "ISC",
   "packageManager": "pnpm@10.15.1",
   "devDependencies": {
+    "@codemod/cli": "catalog:",
     "@types/node": "catalog:",
     "@typescript-eslint/eslint-plugin": "catalog:",
     "@typescript-eslint/parser": "catalog:",

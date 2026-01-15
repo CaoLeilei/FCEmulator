@@ -1,13 +1,19 @@
 packages:
-  - 'apps/*'
-  - 'packages/*'
-  - 'libs/*'
-
+  - apps/*
+  - packages/*
+  - libs/*
 catalog:
-  '@types/node': ^22.10.0
-  '@typescript-eslint/eslint-plugin': ^8.18.0
-  '@typescript-eslint/parser': ^8.18.0
+  "@codemod/cli": ^3.3.0
+  "@types/node": ^25.0.8
+  "@types/raf": ^3.4.3
+  "@typescript-eslint/eslint-plugin": ^8.18.0
+  "@typescript-eslint/parser": ^8.18.0
   eslint: ^9.17.0
   prettier: ^3.4.2
+  raf: ^3.4.1
+  terser: ^5.0.0
+  ts-node: ^10.9.2
+  tsx: ^4.21.0
   turbo: ^2.4.0
-  typescript: ^5.7.2
+  typescript: ~5.9.3
+  vite: npm:rolldown-vite@7.2.5

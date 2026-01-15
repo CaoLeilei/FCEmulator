@@ -1,7 +1,7 @@
 // 逻辑指令测试
-import { CPU } from '@/core/cpu/index.js';
+import { CPU } from '../../src/core/cpu/index.js';
 import { TestCartridge } from '../test-cartridge.js';
-import { Memory } from '@/core/memory/index.js';
+import { Memory } from '../../src/core/memory/index.js';
 
 export function testLogicInstructions() {
   console.log('🧪 开始逻辑指令测试...');

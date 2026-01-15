@@ -5,7 +5,7 @@
  * 用于快速运行CPU指令集测试
  */
 
-import { runAllTests, TEST_SUITES } from '@/core/cpu/tests/index.js';
+import { runAllTests, TEST_SUITES } from '../../src/core/cpu/tests/index.js';
 
 console.log('🎮 FC/NES CPU测试套件');
 console.log('='.repeat(50));

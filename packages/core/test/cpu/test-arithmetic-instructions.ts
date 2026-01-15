@@ -1,7 +1,7 @@
 // 算术指令测试
-import { CPU } from '@/core/cpu/index.js';
+import { CPU } from '../../src/core/cpu/index.js';
 import { TestCartridge } from '../test-cartridge.js';
-import { Memory } from '@/core/memory/index.js';
+import { Memory } from '../../src/core/memory/index.js';
 
 export function testArithmeticInstructions() {
   console.log('🧪 开始算术指令测试...');

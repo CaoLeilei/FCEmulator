@@ -1,4 +1,4 @@
-import { Emulator } from '@/core/emulator/index';
+import { Emulator } from '../../src/core/emulator/index';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 2
